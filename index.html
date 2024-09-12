@@ -1,12 +1,5 @@
-<script>
-export default {
-  mounted() {
-    this.loginRedirect();
-  },
-  methods: {
-    loginRedirect() {
-      this.$router.push("/roomrecords");
-    },
-  },
-};
-</script>
+<script> 
+  setTimeout(function() { 
+    window.location.href = "/roomrecords"; 
+  }, 500);
+</script> 
