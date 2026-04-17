@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NetInsight — Jaringan Komputer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Source+Serif+4:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:       #1a1410;
+      --paper:     #f7f3ec;
+      --cream:     #ede8df;
+      --rust:      #b84a2e;
+      --gold:      #c9973a;
+      --teal:      #2a7d72;
+      --muted:     #6b6259;
+      --rule:      #d4cdc3;
+      --code-bg:   #1e1b16;
+      --code-text: #e8d9b5;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Source Serif 4', Georgia, serif;
+      font-size: 18px;
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: .5;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 0;
+      border-bottom: 4px solid var(--rust);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 4rem;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+
+    .site-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .header-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      letter-spacing: .12em;
+      color: var(--paper);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,.25);
+      padding: .35rem .9rem;
+      border-radius: 2px;
+      transition: background .2s, color .2s;
+    }
+    .header-link:hover { background: var(--rust); border-color: var(--rust); color: #fff; }
+
+    .header-hero {
+      padding: 3.5rem 4rem 3rem;
+    }
+
+    .header-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--rust);
+      margin-bottom: .8rem;
+    }
+
+    .site-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.8rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: .95;
+      color: var(--paper);
+      letter-spacing: -.02em;
+    }
+
+    .site-title span { color: var(--rust); font-style: italic; }
+
+    .site-subtitle {
+      margin-top: 1rem;
+      font-size: .95rem;
+      color: rgba(247,243,236,.55);
+      font-weight: 300;
+      letter-spacing: .03em;
+      max-width: 52ch;
+    }
+
+    /* ── NAV STRIP ── */
+    nav {
+      background: var(--cream);
+      border-bottom: 2px solid var(--rule);
+      padding: .6rem 4rem;
+      display: flex;
+      gap: 2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      overflow-x: auto;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--rust); }
+
+    /* ── MAIN LAYOUT ── */
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 4rem 2rem 5rem;
+    }
+
+    /* ── ARTICLE HEADING ── */
+    .article-header { margin-bottom: 2.8rem; }
+
+    .article-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--rust);
+      border-left: 3px solid var(--rust);
+      padding-left: .75rem;
+      margin-bottom: 1.1rem;
+    }
+
+    h1.article-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      color: var(--ink);
+      margin-bottom: 1.2rem;
+    }
+
+    .article-lead {
+      font-size: 1.2rem;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.65;
+      border-left: 3px solid var(--gold);
+      padding-left: 1.2rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .article-meta {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px double var(--rule);
+    }
+
+    .article-meta span::before { content: '// '; color: var(--rust); }
+
+    /* ── RULE DIVIDER ── */
+    .rule { border: none; border-top: 1px solid var(--rule); margin: 2.8rem 0; }
+    .rule-bold { border: none; border-top: 3px solid var(--ink); margin: 2.8rem 0; }
+
+    /* ── HEADINGS ── */
+    h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 2.6rem 0 .8rem;
+      letter-spacing: -.01em;
+      position: relative;
+    }
+
+    h2::after {
+      content: '';
+      display: block;
+      width: 2.5rem;
+      height: 3px;
+      background: var(--rust);
+      margin-top: .4rem;
+    }
+
+    h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      font-style: italic;
+      color: var(--teal);
+      margin: 2rem 0 .5rem;
+    }
+
+    /* ── BODY TEXT ── */
+    p { margin-bottom: 1.3rem; }
+
+    /* ── PULL QUOTE ── */
+    .pullquote {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.45rem;
+      font-style: italic;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--ink);
+      border-top: 3px solid var(--ink);
+      border-bottom: 3px solid var(--ink);
+      padding: 1.4rem 0;
+      margin: 2.5rem 0;
+      text-align: center;
+    }
+
+    .pullquote span { color: var(--rust); }
+
+    /* ── CALLOUT BOX ── */
+    .callout {
+      background: var(--cream);
+      border-left: 4px solid var(--teal);
+      padding: 1.2rem 1.5rem;
+      margin: 2rem 0;
+      font-size: .95rem;
+    }
+
+    .callout strong {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: .5rem;
+    }
+
+    /* ── CODE BLOCK ── */
+    .code-block {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1.4rem 1.6rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82rem;
+      line-height: 1.7;
+      margin: 1.8rem 0;
+      border-left: 3px solid var(--rust);
+    }
+
+    .code-block .comment { color: #6e7a6e; }
+    .code-block .keyword { color: #d4837a; }
+    .code-block .string  { color: #a8c5a0; }
+    .code-block .number  { color: var(--gold); }
+
+    /* ── TABLE ── */
+    .tbl-wrap { overflow-x: auto; margin: 2rem 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9rem;
+    }
+
+    thead th {
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      padding: .8rem 1rem;
+      text-align: left;
+    }
+
+    tbody td {
+      padding: .75rem 1rem;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) td { background: var(--cream); }
+    tbody tr:hover td { background: #ede4d8; transition: background .15s; }
+
+    td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      color: var(--rust);
+      white-space: nowrap;
+    }
+
+    /* ── LAYER DIAGRAM (visual) ── */
+    .osi-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 2rem 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+    }
+
+    .osi-layer {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: .7rem 1.2rem;
+      border-radius: 2px;
+      transition: transform .15s;
+      cursor: default;
+    }
+
+    .osi-layer:hover { transform: translateX(6px); }
+
+    .osi-num {
+      font-weight: 600;
+      font-size: .65rem;
+      opacity: .7;
+      min-width: 1.5rem;
+      text-align: right;
+    }
+
+    .osi-name { font-weight: 600; min-width: 9rem; }
+    .osi-desc { font-size: .7rem; opacity: .75; line-height: 1.3; }
+
+    .l7  { background: #2a5c8a; color: #d8eaf7; }
+    .l6  { background: #2a7a6a; color: #c8f0e8; }
+    .l5  { background: #3a7a30; color: #d0f0c8; }
+    .l4  { background: #7a6a20; color: #f0e8b0; }
+    .l3  { background: #8a4020; color: #f8d8b8; }
+    .l2  { background: #7a2a3a; color: #f8c8d8; }
+    .l1  { background: #4a2a6a; color: #e0c8f8; }
+
+    /* ── FIGURE ── */
+    figure {
+      margin: 2.2rem 0;
+      text-align: center;
+    }
+
+    .topology-svg { width: 100%; max-width: 620px; height: auto; }
+
+    figcaption {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: .7rem;
+    }
+
+    /* ── TAGS ── */
+    .tags {
+      display: flex; flex-wrap: wrap; gap: .5rem;
+      margin: 2.5rem 0 0;
+    }
+
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .3rem .7rem;
+      border: 1px solid var(--rule);
+      color: var(--muted);
+      border-radius: 2px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--ink);
+      color: rgba(247,243,236,.5);
+      padding: 3rem 4rem;
+      margin-top: 5rem;
+      border-top: 4px solid var(--rust);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .footer-left {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--paper);
+    }
+
+    .footer-right {
+      text-align: right;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      line-height: 1.9;
+    }
+
+    .footer-link {
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(201,151,58,.4);
+      transition: color .2s, border-color .2s;
+    }
+
+    .footer-link:hover { color: var(--rust); border-color: var(--rust); }
+
+    .footer-divider {
+      width: 100%;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,.08);
+      margin: 1.5rem 0 1rem;
+    }
+
+    .footer-copy {
+      width: 100%;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      letter-spacing: .1em;
+      text-align: center;
+      opacity: .35;
+      text-transform: uppercase;
+    }
+
+    /* ── SCROLL ANIMATION ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .55s ease, transform .55s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .header-top, .header-hero, nav { padding-left: 1.5rem; padding-right: 1.5rem; }
+      footer { padding: 2rem 1.5rem; }
+      .footer-right { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header>
+  <div class="header-top">
+    <span class="site-tag">NetInsight · Teknologi Informasi</span>
+    <a class="header-link" href="https://upnyk.ac.id" target="_blank" rel="noopener">
+      ↗ UPN Veteran Yogyakarta
+    </a>
+  </div>
+  <div class="header-hero">
+    <p class="header-eyebrow">Edisi Jaringan Komputer</p>
+    <h1 class="site-title">Net<span>Insight</span></h1>
+    <p class="site-subtitle">Panduan mendalam seputar arsitektur, protokol, dan keamanan jaringan komputer modern — dari OSI hingga SDN.</p>
+  </div>
+</header>
+
+<!-- ══════════════════ NAV ══════════════════ -->
+<nav>
+  <a href="#pengantar">Pengantar</a>
+  <a href="#osi">Model OSI</a>
+  <a href="#topologi">Topologi</a>
+  <a href="#protokol">Protokol</a>
+  <a href="#keamanan">Keamanan</a>
+  <a href="#sdn">SDN</a>
+  <a href="#referensi">Referensi</a>
+</nav>
+
+<!-- ══════════════════ MAIN CONTENT ══════════════════ -->
+<div class="container">
+
+  <!-- ARTICLE HEADER -->
+  <header class="article-header reveal">
+    <p class="article-kicker">Artikel Utama &nbsp;·&nbsp; Infrastruktur Digital</p>
+    <h1 class="article-title">Memahami Jaringan Komputer: Fondasi Dunia Digital Modern</h1>
+    <p class="article-lead">
+      Dari sekadar menghubungkan dua komputer hingga menyokong triliunan transaksi per hari, jaringan komputer adalah tulang punggung peradaban digital — sebuah sistem yang sering tak terlihat, namun tanpanya dunia modern tidak bisa berdiri.
+    </p>
+    <div class="article-meta">
+      <span>Topik: Jaringan Komputer</span>
+      <span>Tingkat: Menengah–Lanjut</span>
+      <span>Estimasi baca: 12 menit</span>
+    </div>
+  </header>
+
+  <!-- SECTION 1 -->
+  <section id="pengantar" class="reveal">
+    <h2>Pengantar: Apa Itu Jaringan Komputer?</h2>
+    <p>
+      Jaringan komputer (<em>computer network</em>) adalah sekumpulan perangkat komputasi — mulai dari laptop, server, smartphone, hingga perangkat IoT — yang saling terhubung melalui media transmisi tertentu sehingga dapat bertukar data dan sumber daya. Koneksi tersebut dapat bersifat fisik (kabel tembaga, serat optik) maupun nirkabel (Wi-Fi, Bluetooth, 5G).
+    </p>
+    <p>
+      Konsep jaringan komputer bermula pada era 1960-an dengan lahirnya <strong>ARPANET</strong>, proyek Departemen Pertahanan Amerika Serikat yang menjadi cikal bakal internet. Sejak itu, perkembangan jaringan berjalan eksponensial: dari menghubungkan beberapa mesin di satu laboratorium, hingga menghubungkan lebih dari <strong>5,4 miliar pengguna</strong> di seluruh penjuru bumi pada tahun 2024.
+    </p>
+
+    <div class="callout">
+      <strong>Definisi Kunci</strong>
+      <strong>Node</strong> adalah setiap perangkat yang terhubung ke jaringan. <strong>Link</strong> adalah jalur komunikasi antara dua node. <strong>Protokol</strong> adalah seperangkat aturan yang mengatur bagaimana data dikemas, dikirim, dan diterima.
+    </div>
+
+    <h3>Klasifikasi Berdasarkan Cakupan Geografis</h3>
+    <p>
+      Jaringan lazim diklasifikasikan menurut jangkauan fisiknya. Jaringan <strong>PAN</strong> (<em>Personal Area Network</em>) mencakup area sangat kecil seperti koneksi Bluetooth antar perangkat pribadi. Jaringan <strong>LAN</strong> (<em>Local Area Network</em>) menghubungkan perangkat dalam satu gedung atau kampus. Jaringan <strong>MAN</strong> (<em>Metropolitan Area Network</em>) mencakup sebuah kota, sementara jaringan <strong>WAN</strong> (<em>Wide Area Network</em>) — termasuk internet — menjangkau lintas negara dan benua.
+    </p>
+  </section>
+
+  <hr class="rule"/>
+
+  <!-- SECTION 2: OSI -->
+  <section id="osi" class="reveal">
+    <h2>Model OSI: Tujuh Lapisan Komunikasi</h2>
+    <p>
+      Model <strong>OSI</strong> (<em>Open Systems Interconnection</em>) yang dikembangkan ISO pada 1984 menjadi kerangka konseptual universal untuk memahami cara sistem jaringan berkomunikasi. Model ini membagi proses komunikasi menjadi tujuh lapisan (layer) dengan tanggung jawab yang terdefinisi dengan jelas.
+    </p>
+
+    <div class="osi-stack" aria-label="Diagram Model OSI 7 Layer">
+      <div class="osi-layer l7">
+        <span class="osi-num">7</span>
+        <span class="osi-name">Application</span>
+        <span class="osi-desc">Antarmuka pengguna; HTTP, FTP, SMTP, DNS</span>
+      </div>
+      <div class="osi-layer l6">
+        <span class="osi-num">6</span>
+        <span class="osi-name">Presentation</span>
+        <span class="osi-desc">Enkripsi, kompresi, konversi format data</span>
+      </div>
+      <div class="osi-layer l5">
+        <span class="osi-num">5</span>
+        <span class="osi-name">Session</span>
+        <span class="osi-desc">Pengelolaan sesi komunikasi antar aplikasi</span>
+      </div>
+      <div class="osi-layer l4">
+        <span class="osi-num">4</span>
+        <span class="osi-name">Transport</span>
+        <span class="osi-desc">Pengiriman end-to-end; TCP, UDP, segmentasi</span>
+      </div>
+      <div class="osi-layer l3">
+        <span class="osi-num">3</span>
+        <span class="osi-name">Network</span>
+        <span class="osi-desc">Routing paket; IP, ICMP, OSPF, BGP</span>
+      </div>
+      <div class="osi-layer l2">
+        <span class="osi-num">2</span>
+        <span class="osi-name">Data Link</span>
+        <span class="osi-desc">MAC address, framing, deteksi error; Ethernet</span>
+      </div>
+      <div class="osi-layer l1">
+        <span class="osi-num">1</span>
+        <span class="osi-name">Physical</span>
+        <span class="osi-desc">Sinyal listrik/optik/nirkabel, kabel, konektor</span>
+      </div>
+    </div>
+
+    <p>
+      Dalam praktik sehari-hari, implementasi nyata mengacu pada model <strong>TCP/IP</strong> yang lebih ringkas dengan empat lapisan: <em>Network Access, Internet, Transport,</em> dan <em>Application</em>. Namun model OSI tetap menjadi standar pedagogis karena detail lapisan-lapisannya memudahkan diagnosa masalah (<em>troubleshooting</em>) secara sistematis.
+    </p>
+
+    <div class="pullquote">
+      "Ketika sebuah email terkirim, data tersebut melewati <span>tujuh lapisan</span> abstraksi — setiap lapisan membungkus data dengan informasi kendali tersendiri."
+    </div>
+  </section>
+
+  <hr class="rule"/>
+
+  <!-- SECTION 3: TOPOLOGI -->
+  <section id="topologi" class="reveal">
+    <h2>Topologi Jaringan</h2>
+    <p>
+      Topologi mengacu pada susunan fisik maupun logis perangkat dan koneksi dalam sebuah jaringan. Pilihan topologi memengaruhi kinerja, skalabilitas, keandalan, dan biaya implementasi secara langsung.
+    </p>
+
+    <!-- SVG Topology Diagram -->
+    <figure>
+      <svg class="topology-svg" viewBox="0 0 620 220" xmlns="http://www.w3.org/2000/svg" aria-label="Ilustrasi berbagai topologi jaringan">
+        <defs>
+          <marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#b84a2e"/>
+          </marker>
+        </defs>
+        <style>
+          .topo-line { stroke: #b84a2e; stroke-width: 1.5; fill: none; }
+          .topo-node { fill: #1a1410; stroke: #c9973a; stroke-width: 2; }
+          .topo-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; fill: #6b6259; }
+          .topo-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; fill: #b84a2e; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+        </style>
+
+        <!-- BUS -->
+        <text x="30" y="18" class="topo-title">Bus</text>
+        <line x1="30" y1="55" x2="160" y2="55" class="topo-line"/>
+        <circle cx="55"  cy="55" r="7" class="topo-node"/>
+        <circle cx="85"  cy="55" r="7" class="topo-node"/>
+        <circle cx="115" cy="55" r="7" class="topo-node"/>
+        <circle cx="145" cy="55" r="7" class="topo-node"/>
+        <line x1="55" y1="55" x2="55" y2="78" class="topo-line"/>
+        <line x1="85" y1="55" x2="85" y2="78" class="topo-line"/>
+        <line x1="115" y1="55" x2="115" y2="78" class="topo-line"/>
+        <line x1="145" y1="55" x2="145" y2="78" class="topo-line"/>
+        <circle cx="55"  cy="85" r="5" fill="#2a7d72"/>
+        <circle cx="85"  cy="85" r="5" fill="#2a7d72"/>
+        <circle cx="115" cy="85" r="5" fill="#2a7d72"/>
+        <circle cx="145" cy="85" r="5" fill="#2a7d72"/>
+
+        <!-- STAR -->
+        <text x="215" y="18" class="topo-title">Star</text>
+        <circle cx="270" cy="75" r="9" fill="#b84a2e"/>
+        <circle cx="230" cy="40" r="5" fill="#2a7d72"/>
+        <circle cx="270" cy="30" r="5" fill="#2a7d72"/>
+        <circle cx="310" cy="40" r="5" fill="#2a7d72"/>
+        <circle cx="230" cy="110" r="5" fill="#2a7d72"/>
+        <circle cx="310" cy="110" r="5" fill="#2a7d72"/>
+        <line x1="270" y1="75" x2="230" y2="40" class="topo-line"/>
+        <line x1="270" y1="75" x2="270" y2="30" class="topo-line"/>
+        <line x1="270" y1="75" x2="310" y2="40" class="topo-line"/>
+        <line x1="270" y1="75" x2="230" y2="110" class="topo-line"/>
+        <line x1="270" y1="75" x2="310" y2="110" class="topo-line"/>
+        <text x="262" y="98" class="topo-label" fill="#b84a2e" style="font-size:8px">Hub</text>
+
+        <!-- RING -->
+        <text x="360" y="18" class="topo-title">Ring</text>
+        <circle cx="450" cy="70" r="40" class="topo-line" stroke-dasharray="5,3"/>
+        <circle cx="450" cy="30" r="6" fill="#2a7d72"/>
+        <circle cx="488" cy="50" r="6" fill="#2a7d72"/>
+        <circle cx="488" cy="90" r="6" fill="#2a7d72"/>
+        <circle cx="450" cy="110" r="6" fill="#2a7d72"/>
+        <circle cx="412" cy="90" r="6" fill="#2a7d72"/>
+        <circle cx="412" cy="50" r="6" fill="#2a7d72"/>
+
+        <!-- MESH label -->
+        <text x="530" y="18" class="topo-title">Mesh</text>
+        <circle cx="545" cy="45"  r="5" fill="#2a7d72"/>
+        <circle cx="595" cy="45"  r="5" fill="#2a7d72"/>
+        <circle cx="545" cy="100" r="5" fill="#2a7d72"/>
+        <circle cx="595" cy="100" r="5" fill="#2a7d72"/>
+        <circle cx="570" cy="70"  r="5" fill="#c9973a"/>
+        <line x1="545" y1="45" x2="595" y2="45" class="topo-line"/>
+        <line x1="545" y1="45" x2="545" y2="100" class="topo-line"/>
+        <line x1="545" y1="45" x2="595" y2="100" class="topo-line"/>
+        <line x1="545" y1="45" x2="570" y2="70" class="topo-line"/>
+        <line x1="595" y1="45" x2="595" y2="100" class="topo-line"/>
+        <line x1="595" y1="45" x2="545" y2="100" class="topo-line"/>
+        <line x1="595" y1="45" x2="570" y2="70" class="topo-line"/>
+        <line x1="545" y1="100" x2="595" y2="100" class="topo-line"/>
+        <line x1="545" y1="100" x2="570" y2="70" class="topo-line"/>
+        <line x1="595" y1="100" x2="570" y2="70" class="topo-line"/>
+
+        <!-- DIVIDERS -->
+        <line x1="190" y1="15" x2="190" y2="130" stroke="#d4cdc3" stroke-width="1"/>
+        <line x1="340" y1="15" x2="340" y2="130" stroke="#d4cdc3" stroke-width="1"/>
+        <line x1="520" y1="15" x2="520" y2="130" stroke="#d4cdc3" stroke-width="1"/>
+
+        <!-- CAPTIONS -->
+        <text x="95"  y="150" class="topo-label" text-anchor="middle">Satu jalur bersama</text>
+        <text x="270" y="150" class="topo-label" text-anchor="middle">Melalui switch/hub pusat</text>
+        <text x="450" y="155" class="topo-label" text-anchor="middle">Token berputar melingkar</text>
+        <text x="570" y="150" class="topo-label" text-anchor="middle">Semua node terhubung</text>
+
+        <!-- LEGEND -->
+        <circle cx="30"  cy="185" r="5" fill="#2a7d72"/>
+        <text x="42" y="189" class="topo-label">Node biasa</text>
+        <circle cx="120" cy="185" r="5" fill="#b84a2e"/>
+        <text x="132" y="189" class="topo-label">Hub / Switch pusat</text>
+        <circle cx="250" cy="185" r="5" fill="#c9973a"/>
+        <text x="262" y="189" class="topo-label">Node penghubung mesh</text>
+      </svg>
+      <figcaption>Fig. 1 — Empat topologi jaringan umum: Bus, Star, Ring, dan Mesh</figcaption>
+    </figure>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Topologi</th>
+            <th>Keunggulan</th>
+            <th>Kelemahan</th>
+            <th>Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bus</td>
+            <td>Murah, mudah dipasang</td>
+            <td>Satu kabel rusak = jaringan lumpuh</td>
+            <td>LAN kecil lawas</td>
+          </tr>
+          <tr>
+            <td>Star</td>
+            <td>Mudah diagnosa, skalabel</td>
+            <td>Bergantung pada hub/switch pusat</td>
+            <td>Kantor, kampus</td>
+          </tr>
+          <tr>
+            <td>Ring</td>
+            <td>Performa konsisten, deterministik</td>
+            <td>Latensi meningkat seiring node</td>
+            <td>MAN, fiber ring</td>
+          </tr>
+          <tr>
+            <td>Mesh</td>
+            <td>Sangat andal, toleran kegagalan</td>
+            <td>Biaya kabel & konfigurasi tinggi</td>
+            <td>Data center, backbone ISP</td>
+          </tr>
+          <tr>
+            <td>Tree</td>
+            <td>Hierarkis, mudah diexpand</td>
+            <td>Root node = single point of failure</td>
+            <td>Jaringan kampus besar</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="rule"/>
+
+  <!-- SECTION 4: PROTOKOL -->
+  <section id="protokol" class="reveal">
+    <h2>Protokol Jaringan Esensial</h2>
+    <p>
+      Protokol adalah "bahasa" yang memungkinkan perangkat heterogen berkomunikasi. Tanpa standarisasi protokol, sebuah router Cisco tidak dapat memahami paket yang dikirim oleh switch Juniper.
+    </p>
+
+    <h3>TCP vs. UDP: Dua Filosofi Pengiriman Data</h3>
+    <p>
+      <strong>TCP</strong> (<em>Transmission Control Protocol</em>) menjamin pengiriman data secara berurutan dan tanpa kehilangan melalui mekanisme <em>three-way handshake</em>, acknowledgment, dan retransmisi. TCP ideal untuk aplikasi yang membutuhkan integritas data seperti transfer file, email, dan web browsing.
+    </p>
+    <p>
+      <strong>UDP</strong> (<em>User Datagram Protocol</em>) sebaliknya tidak memiliki mekanisme koneksi maupun jaminan pengiriman. UDP lebih cepat dan lebih ringan, sehingga cocok untuk streaming video, game online real-time, dan DNS query di mana kecepatan lebih kritis daripada kesempurnaan data.
+    </p>
+
+    <div class="code-block"><span class="comment"># Contoh: Three-Way Handshake TCP (disederhanakan)</span>
+<span class="keyword">Client</span>  →  SYN (seq=<span class="number">100</span>)              →  <span class="keyword">Server</span>
+<span class="keyword">Client</span>  ←  SYN-ACK (seq=<span class="number">300</span>, ack=<span class="number">101</span>)  ←  <span class="keyword">Server</span>
+<span class="keyword">Client</span>  →  ACK (ack=<span class="number">301</span>)             →  <span class="keyword">Server</span>
+<span class="comment"># Koneksi terbentuk — data mulai mengalir</span></div>
+
+    <h3>IP Addressing & Subnetting</h3>
+    <p>
+      Setiap perangkat dalam jaringan IP memiliki alamat unik. <strong>IPv4</strong> menggunakan format 32-bit (contoh: <code style="font-family:'JetBrains Mono',monospace;font-size:.85em;background:var(--cream);padding:.1em .3em;border-radius:2px">192.168.1.1</code>) yang secara teoritis mendukung sekitar 4,3 miliar alamat. Menipisnya alamat IPv4 mendorong adopsi <strong>IPv6</strong> berformat 128-bit yang menyediakan jumlah alamat yang secara praktis tak terbatas.
+    </p>
+    <p>
+      Teknik <strong>CIDR</strong> (<em>Classless Inter-Domain Routing</em>) memungkinkan pembagian jaringan menjadi subnet-subnet lebih kecil menggunakan notasi <em>prefix length</em>. Misalnya, <code style="font-family:'JetBrains Mono',monospace;font-size:.85em;background:var(--cream);padding:.1em .3em;border-radius:2px">192.168.10.0/24</code> mendefinisikan 254 host yang dapat digunakan dalam satu subnet.
+    </p>
+
+    <div class="code-block"><span class="comment"># Kalkulasi subnet /26</span>
+Alamat Jaringan  :  <span class="number">192.168.10.0</span>
+Subnet Mask      :  <span class="number">255.255.255.192</span>  (<span class="keyword">/26</span>)
+Host Tersedia    :  <span class="number">62</span>  (2^6 - 2)
+Broadcast        :  <span class="number">192.168.10.63</span>
+Range Host       :  <span class="number">192.168.10.1</span>  –  <span class="number">192.168.10.62</span></div>
+
+    <h3>Protokol Routing: OSPF dan BGP</h3>
+    <p>
+      <strong>OSPF</strong> (<em>Open Shortest Path First</em>) adalah protokol routing <em>link-state</em> yang digunakan dalam satu sistem otonom. OSPF menggunakan algoritma Dijkstra untuk menghitung jalur terpendek berdasarkan biaya (<em>cost</em>) link. Sementara itu, <strong>BGP</strong> (<em>Border Gateway Protocol</em>) adalah protokol routing antar sistem otonom yang menjadi fondasi routing internet global — ia menentukan bagaimana paket melintasi jaringan ISP berbeda untuk mencapai tujuan akhir.
+    </p>
+  </section>
+
+  <hr class="rule"/>
+
+  <!-- SECTION 5: KEAMANAN -->
+  <section id="keamanan" class="reveal">
+    <h2>Keamanan Jaringan</h2>
+    <p>
+      Seiring meningkatnya ketergantungan pada jaringan digital, permukaan serangan (<em>attack surface</em>) juga membesar. Keamanan jaringan bukan lagi domain eksklusif tim IT — melainkan fondasi operasional setiap organisasi modern.
+    </p>
+
+    <h3>Ancaman Umum</h3>
+    <p>
+      Serangan <strong>DDoS</strong> (<em>Distributed Denial of Service</em>) membanjiri server target dengan trafik palsu hingga layanan lumpuh. Serangan <strong>Man-in-the-Middle (MitM)</strong> terjadi ketika penyerang menyisipkan diri di antara dua pihak yang berkomunikasi, mencegat atau memodifikasi data secara diam-diam. <strong>ARP Spoofing</strong> memanfaatkan kelemahan protokol ARP untuk mengarahkan trafik ke perangkat penyerang di dalam jaringan LAN.
+    </p>
+
+    <div class="callout">
+      <strong>Prinsip Defense-in-Depth</strong>
+      Keamanan jaringan yang baik tidak bergantung pada satu mekanisme perlindungan. Model <em>defense-in-depth</em> melapisi proteksi: firewall di perimeter, IDS/IPS di dalam jaringan, enkripsi pada transmisi data, dan autentikasi kuat di level aplikasi.
+    </div>
+
+    <h3>Firewall & IDS/IPS</h3>
+    <p>
+      <strong>Firewall</strong> mengontrol lalu lintas jaringan berdasarkan aturan yang telah ditetapkan, bertindak sebagai gerbang antara zona jaringan yang berbeda tingkat kepercayaannya. <strong>Next-Generation Firewall (NGFW)</strong> modern mampu melakukan inspeksi paket mendalam (<em>deep packet inspection</em>), mengenali aplikasi, dan mengintegrasikan intelijen ancaman secara real-time.
+    </p>
+    <p>
+      <strong>IDS</strong> (<em>Intrusion Detection System</em>) memantau trafik jaringan dan memberi peringatan ketika pola mencurigakan terdeteksi. Berbeda dengan IDS yang bersifat pasif, <strong>IPS</strong> (<em>Intrusion Prevention System</em>) secara aktif memblokir trafik berbahaya sebelum mencapai target.
+    </p>
+
+    <h3>Enkripsi: TLS/SSL dan VPN</h3>
+    <p>
+      <strong>TLS</strong> (<em>Transport Layer Security</em>) mengenkripsi komunikasi antara klien dan server menggunakan kriptografi asimetris untuk pertukaran kunci, lalu kriptografi simetris untuk efisiensi transfer data. Setiap koneksi HTTPS yang Anda buat memanfaatkan TLS. <strong>VPN</strong> (<em>Virtual Private Network</em>) menciptakan terowongan terenkripsi melalui jaringan publik, memungkinkan akses aman ke sumber daya organisasi dari lokasi mana pun.
+    </p>
+  </section>
+
+  <hr class="rule"/>
+
+  <!-- SECTION 6: SDN -->
+  <section id="sdn" class="reveal">
+    <h2>Software-Defined Networking (SDN)</h2>
+    <p>
+      <strong>SDN</strong> adalah paradigma arsitektur jaringan yang memisahkan <em>control plane</em> (logika pengambilan keputusan routing) dari <em>data plane</em> (pengiriman paket aktual). Dengan SDN, infrastruktur jaringan menjadi dapat diprogram secara terpusat melalui perangkat lunak, menggantikan konfigurasi manual perangkat per perangkat.
+    </p>
+    <p>
+      Pendekatan ini memunculkan konsep <strong>infrastruktur jaringan sebagai kode</strong> (<em>Network as Code</em>), di mana konfigurasi seluruh jaringan dapat dikelola menggunakan alat otomasi seperti Ansible, Terraform, atau platform SDN seperti OpenFlow dan Cisco ACI.
+    </p>
+
+    <div class="pullquote">
+      "SDN mengubah jaringan dari sesuatu yang <span>dikonfigurasi</span> menjadi sesuatu yang <span>diprogram</span> — membuka era otomasi dan elastisitas infrastruktur digital."
+    </div>
+
+    <h3>Cloud Networking & Edge Computing</h3>
+    <p>
+      Evolusi cloud computing mendorong lahirnya model jaringan baru. <strong>Virtual Private Cloud (VPC)</strong> memungkinkan organisasi membangun jaringan terisolasi secara logis di atas infrastruktur cloud publik. <strong>Edge computing</strong> mendorong komputasi lebih dekat ke sumber data — mengurangi latensi yang krusial bagi aplikasi IoT, kendaraan otonom, dan AR/VR industri.
+    </p>
+  </section>
+
+  <hr class="rule"/>
+
+  <!-- REFERENSI -->
+  <section id="referensi" class="reveal">
+    <h2>Referensi & Bacaan Lanjutan</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Sumber</th><th>Keterangan</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>RFC 791</td><td>Spesifikasi resmi Internet Protocol (IPv4) — IETF</td></tr>
+          <tr><td>RFC 793</td><td>Spesifikasi Transmission Control Protocol — IETF</td></tr>
+          <tr><td>ISO/IEC 7498-1</td><td>Standar Model Referensi OSI — ISO</td></tr>
+          <tr><td>Tanenbaum, A.S.</td><td><em>Computer Networks</em>, 5th Ed. — Prentice Hall</td></tr>
+          <tr><td>Kurose & Ross</td><td><em>Computer Networking: A Top-Down Approach</em>, 8th Ed.</td></tr>
+          <tr><td>CISCO NetAcad</td><td>Materi kursus CCNA — networking.cisco.com</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TAGS -->
+  <div class="tags reveal">
+    <span class="tag">Jaringan Komputer</span>
+    <span class="tag">Model OSI</span>
+    <span class="tag">TCP/IP</span>
+    <span class="tag">Routing</span>
+    <span class="tag">Keamanan Jaringan</span>
+    <span class="tag">SDN</span>
+    <span class="tag">IPv6</span>
+    <span class="tag">Cloud Network</span>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer>
+  <div class="footer-left">
+    Net<em>Insight</em> — Jurnal Teknologi Jaringan
+  </div>
+  <div class="footer-right">
+    Dipersembahkan oleh<br>
+    <a class="footer-link" href="https://upnyk.ac.id" target="_blank" rel="noopener">
+      UPN "Veteran" Yogyakarta
+    </a><br>
+    upnyk.ac.id
+  </div>
+  <hr class="footer-divider"/>
+  <p class="footer-copy">
+    © 2025 NetInsight &nbsp;·&nbsp; UPN "Veteran" Yogyakarta &nbsp;·&nbsp; Artikel ini bersifat edukatif
+  </p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
